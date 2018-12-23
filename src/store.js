@@ -3,7 +3,6 @@ import Vuex from 'vuex'
 import axios from './axios-auth'
 import globalAxios from 'axios'
 
-
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -11,20 +10,18 @@ export default new Vuex.Store({
     idToken: null,
     userId: null,
     user: null
-
   },
   mutations: {
     authUser (state, userData) {
-      state.idToken = usgiterData.idToken
+      state.idToken = userData.token
       state.userId = userData.userId
     },
-    storeUser(state, user) {
+    storeUser (state, user) {
       state.user = user
     }
-
   },
   actions: {
-    signup({commit, dispatch}, authData) {
+    signup ({commit, dispatch}, authData) {
       axios.post('/signupNewUser?key=AIzaSyAg6mPBE6tHY2ecKBdRYbRirPob2aE9Muk', {
         email: authData.email,
         password: authData.password,
@@ -40,28 +37,34 @@ export default new Vuex.Store({
         })
         .catch(error => console.log(error))
     },
-    login({commit}, authData) {
+    login ({commit}, authData) {
       axios.post('/verifyPassword?key=AIzaSyAg6mPBE6tHY2ecKBdRYbRirPob2aE9Muk', {
         email: authData.email,
         password: authData.password,
         returnSecureToken: true
       })
-      .then(res => {
-        console.log(res)
-        commit('authUser', {
-          token: res.data.idToken,
-          userId: res.data.localId
+        .then(res => {
+          console.log(res)
+          commit('authUser', {
+            token: res.data.idToken,
+            userId: res.data.localId
+          })
         })
-      })
         .catch(error => console.log(error))
     },
-    storeUser({commit}, userData) {
-      globalAxios.post('/users.json', userData)
-      .then(res => console.log(res))
-      .catch(error => console.log(error))
+    storeUser ({commit, state}, userData) {
+      if (!state.idToken) {
+        return
+      }
+      globalAxios.post('/users.json' + '?auth=' + state.idToken, userData)
+        .then(res => console.log(res))
+        .catch(error => console.log(error))
     },
-    fetchUser({commit}) {
-      globalAxios.get('/users.json')
+    fetchUser ({commit, state}) {
+      if (!state.idToken) {
+        return
+      }
+      globalAxios.get('/users.json' + '?auth=' + state.idToken)
         .then(res => {
           console.log(res)
           const data = res.data
@@ -78,7 +81,7 @@ export default new Vuex.Store({
     }
   },
   getters: {
-    user(state) {
+    user (state) {
       return state.user
     }
   }
