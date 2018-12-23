@@ -105,13 +105,10 @@
           terms: this.terms
         }
         console.log(formData)
-        axios.post('/signupNewUser?key=AIzaSyCXlVPPWknVGhfc60mt7Jkv0Xzrho7_mwc', {
+        this.$store.dispatch('signup', {
           email: formData.email,
-          password: formData.password,
-          returnSecureToken: true
+          password: formData.password
         })
-          .then(res => console.log(res))
-          .catch(error => console.log(error))
       }
     }
   }
